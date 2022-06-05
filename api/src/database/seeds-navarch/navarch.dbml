@@ -1,0 +1,292 @@
+Project navarch_core {
+  database_type: 'PostgreSQL'
+  Note: 'Navarch core database'
+}
+
+Table navarch.customer {
+  code varchar(63) [pk, unique]
+  name varchar(255) [not null]
+  valid_from timestamp [not null]
+  valid_to timestamp [default: null]
+  description text [default: null]
+  Note: 'Buyer details should ideally be slow changing'
+}
+
+Table navarch.contact {
+  id integer [pk, increment]
+  customer_code varchar(63) [ref: - navarch.customer.code]
+  first_name varchar(255)
+  last_name varchar(255)
+  primary_contact boolean
+}
+
+Enum address_type {
+  billing
+  shipping
+}
+
+Table navarch.address {
+  id integer [pk, increment]
+  line1 varchar(255)
+  line2 varchar(255)
+  city varchar(127)
+  province varchar(127)
+  zip varchar(31)
+  country varchar(2) [ref: - navarch.ref_country.iso2]
+  phone integer
+  type address_type
+}
+
+Table navarch.ref_country {
+  iso2 varchar(2) [pk]
+  iso3 varchar(3)
+  name varchar(80)
+  description text
+  num_code numeric(3)
+  phone_code numeric(3)
+}
+
+Table navarch.customer_address {
+  id integer [pk, increment]
+  customer_code integer [ref: - navarch.customer.code]
+  address_type address_type
+  address_id integer [ref: - navarch.address.id]
+  valid_from date
+  valid_to date
+}
+
+Enum status_type {
+  physical
+  financial
+}
+
+Enum status_value {
+  planned
+  in_transit
+  invoiced
+  finalized
+}
+
+Table navarch.status {
+  id integer [pk]
+  type status_type
+  status status_value
+}
+
+Table navarch.parcel {
+  id integer [pk, increment]
+  contract_id integer [ref: > navarch.contract.id]
+  parcel_number int8 [note: 'One contract can have many parcels. This adds order or time history to each one.']
+  status integer [ref: > navarch.status.id]
+  shipment integer [ref: > navarch.shipment.id]
+  letter_of_credit integer [default: null, ref: > navarch.letter_of_credit.id]
+}
+
+Table navarch.ref_currency {
+  id integer [pk]
+  code varchar(3)
+  description varchar(63)
+  symbol char(3)
+}
+
+Table navarch.letter_of_credit {
+  id integer [pk, increment]
+  advice text [note: 'VERY VERY important']
+  currency integer [ref: < navarch.ref_currency.id]
+  value integer
+  portion numeric [default: 100.0]
+  date_received date [default: null]
+  date_expire date [default: null]
+}
+
+Table navarch.ref_qp_code {
+  id integer [pk, increment]
+  code varchar(31) [unique]
+}
+
+
+Table navarch.contract_material {
+  id integer [pk, increment]
+  contract_id integer [ref: > navarch.contract.id]
+  material_id integer [ref: > navarch.ref_material.id]
+  assay_id integer [ref: > navarch.assay.id]
+  is_primary boolean
+  required_grade numeric [note: 'This is the required grade, if material is primary material. Actual material grade is found in assay.']
+  required_percentage numeric [note: 'This is the required percentage, if material is primary material. Actual material percentage is found in assay.']
+  required_quality numeric
+  required_quality_unit integer [ref: > navarch.ref_unit.id]
+  required_quantity numeric
+  required_quantity_unit integer [ref: > navarch.ref_unit.id]
+  allowance_percent numeric
+  payable_percent numeric
+  minimum_deduction numeric
+  minimum_deduction_unit integer [ref: > navarch.ref_unit.id]
+  splitting_limit numeric
+  splitting_limit_unit integer [ref: > navarch.ref_unit.id]
+}
+
+Enum contract_type {
+  frame
+  spot
+  moa
+}
+
+Table navarch.ref_event {
+  id integer [pk, increment]
+  event varchar(31) [note: 'TODO: Apply unique constraint on lower(). eg: loaded, invoiced, unloaded, first payment etc']
+  short_desc varchar(127)
+  description text [default: null]
+  note: 'Distinct events that can be tied to RevRec rules, Risk or Title Transfer rules'
+}
+
+Table navarch.treatment_charge_rule {
+  id integer [pk, increment]
+  rule varchar(127)
+  description text [default: null]
+  note: 'Example: Benchmark minus 69. TODO: Find out more.'
+}
+
+Table navarch.umpire {
+  id integer [pk, increment]
+  name varchar(31)
+  description text [default: null]
+}
+
+Table navarch.contract_umpire {
+  contract_id integer [ref: > navarch.contract.id]
+  umpire integer [ref: > navarch.umpire.id]
+  
+  indexes {
+    (contract_id, umpire)
+  }
+}
+
+Table navarch.contract {
+  id integer [pk, increment]
+  type contract_type
+  counter_party integer [ref: > navarch.customer.code]
+  agreement_date date
+  effective_date date
+  expiration_date date
+  shipment_period_start date
+  shipment_period_end date
+  shipment_terms integer [ref: > navarch.ref_shipment_term.id]
+  qp_month date [note: 'The month and year to take average of market price that forms the quotational period price. The date doesnt matter']
+  qp_code integer [ref: > navarch.ref_qp_code.id, note: 'Reference table to a standard QP code list']
+  qp_code_number int8 [note: 'Number of months for this QP code']
+  is_lc boolean [note: 'Indicates if contract requires valid letter_of_credit']
+  bank varchar(127) [default: null, note: 'Could be tied to customer?']
+  revrec_rule integer [ref: > navarch.ref_event.id]
+  risk_transfer integer [ref: > navarch.ref_event.id]
+  title_transfer integer [ref: > navarch.ref_event.id]
+  revrec_date date [note: 'It is a condition, like from first payment received, first issued invoice, etc']
+  default_load_port integer [ref: > navarch.port.id]
+  destination_port integer [ref: > navarch.port.id]
+  shipment_size numeric
+  treatment_charges integer [ref: > navarch.treatment_charge_rule.id]
+  treatment_unit integer [note: 'Probably not needed. Usually just currency/weight']
+  umpire_rule text
+}
+
+Enum assay_type {
+  planned_inturn
+  inturn_final
+  estimate
+  outurn
+}
+
+Table navarch.assay {
+  id integer [pk, increment]
+  exchanged boolean [note: 'whether a specific element is in contract or not (element that matters most for this parcel)']
+  type assay_type [note: 'planned inturn, inturn final, estimate, outurn']
+  analytical numeric [note: 'Uses the default_unit']
+  unit integer [ref: > navarch.ref_unit.id]
+}
+
+Table navarch.ref_material {
+  id integer [pk, increment]
+  name varchar(127)
+  symbol varchar(127)
+  default_unit integer [ref: > navarch.ref_unit.id]
+  exchanged boolean
+}
+
+Table navarch.ref_unit {
+  id integer [pk, increment]
+  unit varchar(31)
+  symbol char(15)
+  description text
+}
+
+Table navarch.shipment {
+  id integer [pk, increment]
+  name varchar(24)
+  vessel integer [ref: > navarch.vessel.id, note: 'Add default to TBA vessel?']
+  origin integer [ref: - navarch.port.id]
+  destination integer [ref: - navarch.port.id]
+  plan_date date [note: 'Estimated date to complete loading (available for shipping)']
+  bl_date date [note: 'The actuale date when loading for shipment is completed']
+  shipment_date date [note: 'Never be entered. Calculated. Plan date if no BL date, otherwise BL date']
+  laycan_start date [note: 'keep']
+  laycan_end date [note: 'keep']
+  estimate_arrival_date date [note: 'Estimated discharge port (disport) arrival date']
+  arrival_date date [note: 'Actual discharge port (disport) arrival date']
+  order_number int8 [note: 'Calculated.']
+  freight_provider integer [ref: - navarch.freight_provider.id]
+  loading integer [ref: - navarch.shipment_loading.id]
+  voyage integer [ref: - navarch.shipment_voyage.id]
+  inturn_weight double
+  inturn_unit integer [ref: > navarch.ref_unit.id]
+  outturn_weight double
+  outturn_unit integer [ref: > navarch.ref_unit.id, note: 'TODO: Default show only one unit per commodity_traded, assume identical for in/out until proven wrong']
+}
+
+Table navarch.vessel {
+  id integer [pk, increment]
+  name varchar(127) [unique, note: 'TODO: Apply lower(name) unique constraint!']
+}
+
+Table navarch.port {
+  id integer [pk, increment]
+  short_name varchar(31)
+  long_name varchar(63)
+  address integer [ref: - navarch.address.id]
+}
+
+Table navarch.freight_provider {
+  id integer [pk, increment]
+}
+
+Table navarch.shipment_loading {
+  id integer [pk, increment, note: 'May not be needed']
+}
+
+Table navarch.shipment_voyage {
+  id integer [pk, increment, note: 'May not be needed']
+}
+
+
+Table navarch.ref_shipment_term {
+  id integer [pk, increment, note: 'May not be needed']
+  code varchar(7)
+  representation varchar(63)
+  code_text varchar(127)
+  description text
+}
+
+Table navarch.invoice {
+  id integer [pk, increment]
+  creation_time datetime
+  type invoice_type
+}
+
+Enum invoice_type {
+  proforma
+  conditional
+  final
+}
+
+Table navarch.payment {
+  id integer [pk, increment]
+  payment_for_invoice integer [ref: - navarch.invoice.id]
+}

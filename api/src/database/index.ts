@@ -23,6 +23,7 @@ export default function getDatabase(): Knex {
 		'DB_CLIENT',
 		'DB_VERSION',
 		'DB_SEARCH_PATH',
+		'DB_CUSTOM_SCHEMA',
 		'DB_CONNECTION_STRING',
 		'DB_POOL',
 		'DB_EXCLUDE_TABLES',
@@ -116,6 +117,7 @@ export default function getDatabase(): Knex {
 	}
 
 	database = knex(knexConfig);
+
 	validateDatabaseCharset(database);
 
 	const times: Record<string, number> = {};

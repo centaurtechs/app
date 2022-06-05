@@ -1,0 +1,5 @@
+table: parcel
+
+columns:
+  id:
+    increments: true

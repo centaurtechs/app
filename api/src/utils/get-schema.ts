@@ -59,6 +59,8 @@ async function getDatabaseSchema(
 		relations: [],
 	};
 
+	// schemaInspector.explodedSchema = env.default.DB_CUSTOM_SCHEMA ? [ env.default.DB_CUSTOM_SCHEMA ] : schemaInspector.explodedSchema;
+
 	const schemaOverview = await schemaInspector.overview();
 
 	const collections = [
