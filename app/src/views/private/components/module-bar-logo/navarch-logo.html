@@ -1,0 +1,87 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Animated SVG Button</title>
+
+    <style>
+      :root {
+        --logo-color: #6644ff;
+        --wave-height: -7%;
+      }
+
+      #navarch-logo {
+        fill: var(--logo-color);
+        transform: translateY(var(--wave-height));
+      }
+      /* svg:hover #navarch-logo {
+        animation: yaw 3s;
+        animation-iteration-count: infinite;
+        animation-timing-function: ease;
+      } */
+
+      @keyframes yaw {
+        0% {
+          transform: rotate(0deg) translateY(var(--wave-height));
+          transform-origin: center center;
+        }
+        20% {
+          transform: rotate(5deg);
+          transform-origin: center center;
+        }
+        40% {
+          transform: rotate(-3deg);
+          transform-origin: center center;
+        }
+        80% {
+          transform: rotate(-6deg) translateY(var(--wave-height));
+          transform-origin: center center;
+        }
+        100% {
+          transform: rotate(0deg) translateY(var(--wave-height));
+          transform-origin: center center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="80px" height="80px" viewBox="0 0 100 100">
+      <g id="navarch-logo" featureKey="mugSzh-0">
+        <path d="M93.209,62.333l0.537-0.187l0.369-1.257c0,0-13.978,5.978-43.634,5.978  c-29.677,0-45.819-11.977-45.819-11.977l0.444,1.999c0,0,0.725,0.909,5,3.274c0.629,1.632,1.353,3.072,2.164,4.354  c7.167,1.903,21.235,4.354,39.749,4.354C69.714,68.871,87.043,64.241,93.209,62.333z"/>
+        <path d="M52.018,69.775c-19.864,0-33.399-2.812-39.471-4.352c2.537,4.165,5.628,6.978,7.352,8.444  c2.444,1.905,6.35,3.981,7.625,3.981c2.888,0.091,58.147-0.263,58.147-0.263l2.632-4.628l4.184-9.531  C85.767,65.423,69.067,69.775,52.018,69.775z"/>
+        <path d="M21.992,55.262c0,0-0.907-29.934,22.048-55.262c11.422,13.978,21.586,24.511,21.586,24.511l0.537,35.658  L21.992,55.262z"/>
+        <path d="M58.739,3.185h-1.093L57.37,14.608c0.721,0.906,1.276,1.46,1.908,2.278L58.739,3.185z"/>
+        <path d="M17.712,54.354L0.198,52.541c0,0-2.536-16.699,10.533-29.305c4.815,7.536,6.534,10.701,6.534,10.701  L17.712,54.354z"/>
+        <path d="M14.271,22.418h-0.278l-0.093,4.889c0.185,0.185,0.278,0.37,0.371,0.554V22.418z"/>
+        <path d="M59.811,60.333l-3.259-0.351v5.975c1.095,0,2.259-0.09,3.352-0.181L59.811,60.333z"/>
+        <path d="M35.855,61.147h-9.607v1.908c2.906,0.835,6.165,1.462,9.607,1.999V61.147z"/>
+        <path d="M14.64,54.632l-1.091-0.093v4.258c0.351,0.181,0.722,0.369,1.091,0.463V54.632z"/>
+        <path d="M69.251,60.164c0,0-1.812-29.137,9.351-44.28c10.35,7.884,18.956,14.792,18.956,14.792L100,56.167  L69.251,60.164z"/>
+        <path d="M86.671,58.702l-1.369,0.187l-0.534,3.997c0.534-0.09,0.999-0.184,1.462-0.276L86.671,58.702z"/>
+        <path d="M91.21,16.975h-0.372l-0.906,6.979c0.184,0.093,0.279,0.186,0.463,0.28L91.21,16.975z"/>
+      </g>
+    </svg> -->
+    <svg width="100" height="100" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1000" height="1000" fill="#fafafa"/>
+      <g id="navarch-logo">
+      <path id="Staff" d="M490 658L497 225L509.5 658H490Z"/>
+      <path id="Sail" d="M633.122 338C501.301 482.893 273.448 512.409 176 509.055C325.683 674.51 527.021 632.686 636.931 568.598C636.931 568.598 661.692 553.483 699.785 529.067C663.216 469.538 632.106 375.722 633.122 338Z"/>
+      <path id="Body" d="M92 494C92 684 154.886 712.162 232.5 736.5C379.233 782.512 614.92 804.379 908 697.596C896.287 706.774 786.447 663.662 759.546 529.592C628.029 654.875 493.43 663.722 388.41 663.035C229.592 661.997 131.127 579.705 92 494Z"/>
+      </g>
+    </svg>
+
+
+    <script>
+
+        const svg = document.getElementById('navarch-logo');
+  
+        svg.onclick = (e) => {
+          const colors = ['red', 'blue', 'green', 'orange', 'pink', 'purple']
+          const rando = () => colors[Math.floor(Math.random() * colors.length)];
+          document.documentElement.style.cssText = `
+          --logo-color: ${rando()};
+          `
+        }
+  
+      </script>
+  </body>
+</html>

@@ -75,6 +75,7 @@ export default defineComponent({
 	--v-progress-linear-height: 2px;
 	--v-progress-linear-color: var(--white);
 	--v-progress-linear-background-color: rgb(255 255 255 / 0.5);
+	--wave-height: -7%;
 
 	position: relative;
 	display: flex;
@@ -114,6 +115,9 @@ export default defineComponent({
 
 	.running {
 		animation: 560ms run steps(14) infinite;
+		// animation: yaw 3s;
+		// animation-iteration-count: infinite;
+		// animation-timing-function: ease;
 	}
 }
 
@@ -133,6 +137,29 @@ export default defineComponent({
 @keyframes run {
 	100% {
 		background-position: 100%;
+	}
+}
+
+@keyframes yaw {
+	0% {
+		transform: rotate(0deg) translateY(var(--wave-height));
+		transform-origin: center center;
+	}
+	20% {
+		transform: rotate(5deg);
+		transform-origin: center center;
+	}
+	40% {
+		transform: rotate(-3deg);
+		transform-origin: center center;
+	}
+	80% {
+		transform: rotate(-6deg) translateY(var(--wave-height));
+		transform-origin: center center;
+	}
+	100% {
+		transform: rotate(0deg) translateY(var(--wave-height));
+		transform-origin: center center;
 	}
 }
 </style>
